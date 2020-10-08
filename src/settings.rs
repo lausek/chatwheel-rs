@@ -72,11 +72,9 @@ pub fn get_audio_file_path(id: &str) -> PathBuf {
     audio_file
 }
 
-pub fn get_audio_file(id: &str) -> bool {
+pub fn get_audio_file(id: &str) -> File {
     let audio_file_path = get_audio_file_path(id);
-    let file = File::open(audio_file_path).unwrap();
-    let source = Decoder::new(BufReader::new(file)).unwrap();
-    true
+    File::open(audio_file_path).unwrap()
 }
 
 pub struct Settings {

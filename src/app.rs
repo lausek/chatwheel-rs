@@ -10,7 +10,17 @@ fn close() -> gtk::Inhibit {
 }
 
 fn play_audio_file(id: &str) {
-    let audio_file = get_audio_file(id);
+    use rodio::Source;
+    use std::thread;
+
+    let id = id.to_string();
+    let audio_file = get_audio_file(&id);
+    let decoder = rodio::Decoder::new(audio_file).unwrap();
+
+    let (stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
+    let sink = rodio::Sink::try_new(&stream_handle).unwrap();
+    sink.append(decoder);
+    sink.sleep_until_end();
 }
 
 pub struct App {
@@ -70,15 +80,12 @@ impl App {
             let button_line = line.clone();
 
             button.connect_clicked(move |_| {
-                close();
-
                 if !button_line.audios.is_empty() {
-                    play_audio_file("ti10_174");
-                    //get_audio_file("ti10_174");
-                    //println!("{:?}", );
+                    let id = button_line.id.as_ref().unwrap();
+                    play_audio_file(&id);
                 }
 
-                //std::process::exit(fcode);
+                close();
             });
 
             component.pack_start(&button, true, true, 2);
