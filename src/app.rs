@@ -10,6 +10,7 @@ fn close() -> gtk::Inhibit {
 }
 
 pub fn play_audio_file(id: &str) {
+    // TODO: https://unix.stackexchange.com/questions/576785/redirecting-pulseaudio-sink-to-a-virtual-source/594698#594698
     use rodio::Source;
     use std::thread;
 
