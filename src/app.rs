@@ -2,11 +2,15 @@ use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
 use crate::consts::{HEIGHT, NAME, WIDTH};
-use crate::settings::Settings;
+use crate::settings::{get_audio_file, Settings};
 
 fn close() -> gtk::Inhibit {
     gtk::main_quit();
     Inhibit(false)
+}
+
+fn play_audio_file(id: &str) {
+    let audio_file = get_audio_file(id);
 }
 
 pub struct App {
@@ -60,27 +64,30 @@ impl App {
 
         let component = gtk::Box::new(gtk::Orientation::Horizontal, 10);
 
-        /*
+        for line in self.settings.lines.iter() {
+            let button = gtk::Button::new_with_label(line.text.as_str());
 
-        gtk::Button::new_with_label(jb.label.as_str()))
-        if let Some(ref info) = self.settings.info {
-            component.pack_start(&gtk::Label::new(Some(info.as_str())), true, true, PADDING);
-        }
+            let button_line = line.clone();
 
-        for &(fcode, ref button) in &self.settings.buttons {
             button.connect_clicked(move |_| {
                 close();
-                std::process::exit(fcode);
+
+                if !button_line.audios.is_empty() {
+                    play_audio_file("ti10_174");
+                    //get_audio_file("ti10_174");
+                    //println!("{:?}", );
+                }
+
+                //std::process::exit(fcode);
             });
 
-            component.pack_start(button, true, true, PADDING);
+            component.pack_start(&button, true, true, 2);
         }
 
         component.set_spacing(2);
         component.show_all();
 
         window.add(&component);
-        */
 
         window.show_all();
 

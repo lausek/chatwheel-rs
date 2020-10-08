@@ -8,10 +8,11 @@ use crate::consts::CHATWHEEL_ALL_PATH;
 
 pub type Lines = HashMap<String, Line>;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Line {
-    text: String,
-    audios: Vec<String>,
+    pub id: Option<String>,
+    pub text: String,
+    pub audios: Vec<String>,
 }
 
 pub fn load() -> Result<Lines, Box<dyn Error>> {
