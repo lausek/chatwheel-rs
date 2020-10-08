@@ -9,7 +9,7 @@ fn close() -> gtk::Inhibit {
     Inhibit(false)
 }
 
-fn play_audio_file(id: &str) {
+pub fn play_audio_file(id: &str) {
     use rodio::Source;
     use std::thread;
 
@@ -82,7 +82,12 @@ impl App {
             button.connect_clicked(move |_| {
                 if !button_line.audios.is_empty() {
                     let id = button_line.id.as_ref().unwrap();
-                    play_audio_file(&id);
+
+                    use std::process::Command;
+                    Command::new("sh")
+                        .args(&["-c", format!("chatwheel-rs play {}", id).as_ref()])
+                        .spawn()
+                        .expect("failed to spawn process");
                 }
 
                 close();
