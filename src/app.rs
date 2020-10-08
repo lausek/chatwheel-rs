@@ -10,14 +10,11 @@ fn close() -> gtk::Inhibit {
 }
 
 pub fn play_audio_file(id: &str) {
-    use rodio::Source;
-    use std::thread;
-
     let id = id.to_string();
     let audio_file = get_audio_file(&id);
     let decoder = rodio::Decoder::new(audio_file).unwrap();
 
-    let (stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
+    let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
     let sink = rodio::Sink::try_new(&stream_handle).unwrap();
     sink.append(decoder);
     sink.sleep_until_end();

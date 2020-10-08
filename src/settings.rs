@@ -1,5 +1,3 @@
-use rodio::Decoder;
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs::{create_dir, File};
 use std::io::{BufReader, BufWriter, Write};
@@ -19,9 +17,9 @@ fn fetch_audio(id: &str, url: &str) -> Result<(), Box<dyn Error>> {
     let bytes = response.bytes()?;
 
     let file_path = get_audio_file_path(id);
-    let mut file = File::create(file_path).unwrap();
+    let file = File::create(file_path).unwrap();
     let mut writer = BufWriter::new(file);
-    writer.write(&bytes).unwrap();
+    writer.write_all(&bytes).unwrap();
 
     Ok(())
 }
@@ -34,7 +32,7 @@ fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
         audio_dir.push(CHATWHEEL_CONF_AUDIO_PATH);
 
         if !audio_dir.exists() {
-            create_dir(audio_dir.clone())?;
+            create_dir(audio_dir)?;
         }
     }
 
@@ -83,11 +81,11 @@ pub struct Settings {
 
 impl Settings {
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        let mut config_dir = chatwheel_config_dir();
+        let config_dir = chatwheel_config_dir();
 
         init_config_dir(config_dir.clone())?;
 
-        let mut config_file = config_dir.clone();
+        let mut config_file = config_dir;
         config_file.push(CHATWHEEL_CONF_PATH);
 
         let file = File::open(config_file)?;

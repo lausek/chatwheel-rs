@@ -1,5 +1,3 @@
-use gtk::prelude::*;
-use gtk::{StyleContext, Window, WindowPosition, WindowType};
 use std::env::args;
 
 mod app;
