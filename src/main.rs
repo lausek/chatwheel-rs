@@ -1,33 +1,23 @@
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::error::Error;
-use std::fs::File;
-use std::io::BufReader;
+use gtk::prelude::*;
+use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
-type Lines = HashMap<String, Line>;
+mod app;
+mod consts;
+mod line;
+mod settings;
 
-const NAME: &str = "chatwheel-rs";
-const CHATWHEEL_ALL_PATH: &str = "./data/chatwheel.json";
-const WIDTH: u32 = 400;
-const HEIGHT: u32 = 200;
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Line {
-    text: String,
-    audios: Vec<String>,
-}
-
-fn load() -> Result<Lines, Box<dyn Error>> {
-    let file = File::open(CHATWHEEL_ALL_PATH)?;
-    let reader = BufReader::new(file);
-    let lines: Lines = serde_json::from_reader(reader)?;
-    Ok(lines)
-}
+use crate::app::App;
+use crate::settings::Settings;
 
 fn main() {
-
-    for (key, value) in load().unwrap().iter() {
+    /*
+    for (key, value) in line::load().unwrap().iter() {
         println!("{:?}: {:?}", key, value);
     }
+    */
 
+    let settings = Settings::load().unwrap();
+    gtk::init().unwrap_or_else(|_| panic!("Failed to inizialite gtk"));
+
+    App::new(settings).run();
 }
