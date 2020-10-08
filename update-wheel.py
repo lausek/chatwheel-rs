@@ -8,10 +8,11 @@ def is_tooltip(item):
     return 'class' in item.attrs and 'tooltip' in item.attrs['class']
 
 def extract_text(item):
+    import re
     for sup in item.find_all('sup'):
         sup.extract()
-    text = item.text
-    return text.strip().replace('[All]', '')
+    text = item.text.replace('[All]', '')
+    return re.sub('\(.*\)', '', text).strip()
 
 def packageid(text):
     if 'international' in text.lower():
