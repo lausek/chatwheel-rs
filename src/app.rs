@@ -20,6 +20,28 @@ pub fn play_audio_file(id: &str) {
     sink.sleep_until_end();
 }
 
+// circular grid pattern
+fn get_coords(_n: usize) -> &'static [(i32, i32)] {
+    &[
+        (1, 1),
+        (1, 2),
+        (1, 3),
+        (1, 4),
+        (1, 5),
+        (2, 1),
+        (2, 5),
+        (3, 1),
+        (3, 5),
+        (4, 1),
+        (4, 5),
+        (5, 1),
+        (5, 2),
+        (5, 3),
+        (5, 4),
+        (5, 5),
+    ]
+}
+
 pub struct App {
     settings: Settings,
 }
@@ -69,9 +91,10 @@ impl App {
             gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
         );
 
-        let component = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+        let component = gtk::Grid::new();
+        let coords = get_coords(self.settings.lines.len());
 
-        for line in self.settings.lines.iter() {
+        for (line, (x, y)) in self.settings.lines.iter().zip(coords.iter()) {
             let button = gtk::Button::new_with_label(line.text.as_str());
 
             let button_line = line.clone();
@@ -90,10 +113,11 @@ impl App {
                 close();
             });
 
-            component.pack_start(&button, true, true, 2);
+            component.attach(&button, *x, *y, 1, 1);
         }
 
-        component.set_spacing(2);
+        component.set_column_spacing(2);
+        component.set_row_spacing(2);
         component.show_all();
 
         window.add(&component);
