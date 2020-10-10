@@ -116,7 +116,7 @@ impl App {
 
                     use std::process::Command;
                     Command::new("sh")
-                        .args(&["-c", format!("chatwheel-rs play {}", id).as_ref()])
+                        .args(&["-c", format!("chatwheel-rs --play {}", id).as_ref()])
                         .spawn()
                         .expect("failed to spawn process");
                 }
