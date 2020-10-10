@@ -7,7 +7,7 @@ mod consts;
 mod line;
 mod settings;
 
-use crate::app::{play_audio_file, App};
+use crate::app::{forward_audio, play_audio_file, App};
 use crate::settings::Settings;
 
 fn run_gui() {
@@ -18,6 +18,14 @@ fn run_gui() {
 
 fn run_config() {}
 
+fn run_play(id: &str, forward_audio_enabled: bool) {
+    if forward_audio_enabled {
+        forward_audio(id);
+    }
+
+    play_audio_file(id);
+}
+
 fn main() {
     let mut args_iter = args();
     let _ = args_iter.next().unwrap();
@@ -27,7 +35,8 @@ fn main() {
             "config" => run_config(),
             "play" => {
                 let id = args_iter.next().expect("no sound file id given");
-                play_audio_file(&id);
+                let forward_audio = true;
+                run_play(&id, forward_audio);
             }
             _ => println!("command `{}` not known", cmd),
         }
