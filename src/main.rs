@@ -1,11 +1,12 @@
-use std::env::args;
+use gtk::prelude::*;
+use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
 mod app;
 mod consts;
 mod line;
 mod settings;
 
-use crate::app::{play_audio_file, App};
+use crate::app::{forward_audio, play_audio_file, App};
 use crate::settings::Settings;
 
 fn run_gui() {
@@ -16,20 +17,51 @@ fn run_gui() {
 
 fn run_config() {}
 
-fn main() {
-    let mut args_iter = args();
-    let _ = args_iter.next().unwrap();
+fn run_play(id: &str, forward_audio_enabled: bool) {
+    if forward_audio_enabled {
+        forward_audio(id);
+    }
 
-    if let Some(cmd) = args_iter.next().as_ref() {
-        match cmd.as_ref() {
-            "config" => run_config(),
-            "play" => {
-                let id = args_iter.next().expect("no sound file id given");
-                play_audio_file(&id);
-            }
-            _ => println!("command `{}` not known", cmd),
+    play_audio_file(id);
+}
+
+fn main() {
+    let mut play: Option<String> = None;
+    let mut forward_audio_enabled = false;
+    let mut config_requested = false;
+
+    {
+        use argparse::{ArgumentParser, StoreOption, StoreTrue};
+        let mut parser = ArgumentParser::new();
+
+        parser
+            .refer(&mut play)
+            .add_option(&["--play"], StoreOption, "output a chatwheel line");
+
+        parser.refer(&mut forward_audio_enabled).add_option(
+            &["--forward-to-mic"],
+            StoreTrue,
+            "forward chatwheel line as microphone input",
+        );
+
+        parser.refer(&mut config_requested).add_option(
+            &["--config"],
+            StoreTrue,
+            "open the configuration",
+        );
+
+        parser.parse_args_or_exit();
+    }
+
+    if play.is_some() || config_requested {
+        if let Some(ref id) = play {
+            run_play(&id, forward_audio_enabled);
+        }
+
+        if config_requested {
+            run_config()
         }
     } else {
-        run_gui()
+        run_gui();
     }
 }
