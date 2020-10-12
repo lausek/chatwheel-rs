@@ -77,6 +77,7 @@ pub fn get_audio_file(id: &str) -> File {
 
 pub struct Settings {
     pub lines: Vec<Line>,
+    pub forward_audio_enabled: bool,
 }
 
 impl Settings {
@@ -91,6 +92,10 @@ impl Settings {
         let file = File::open(config_file)?;
         let reader = BufReader::new(file);
         let lines: Vec<Line> = serde_json::from_reader(reader)?;
-        Ok(Self { lines })
+
+        Ok(Self {
+            forward_audio_enabled: false,
+            lines,
+        })
     }
 }

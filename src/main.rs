@@ -1,6 +1,3 @@
-use gtk::prelude::*;
-use gtk::{StyleContext, Window, WindowPosition, WindowType};
-
 mod app;
 mod consts;
 mod line;
@@ -9,8 +6,11 @@ mod settings;
 use crate::app::{forward_audio, play_audio_file, App};
 use crate::settings::Settings;
 
-fn run_gui() {
-    let settings = Settings::load().unwrap();
+fn run_gui(forward_audio_enabled: bool) {
+    let mut settings = Settings::load().unwrap();
+
+    settings.forward_audio_enabled = forward_audio_enabled;
+
     gtk::init().unwrap_or_else(|_| panic!("Failed to inizialite gtk"));
     App::new(settings).run();
 }
@@ -62,6 +62,6 @@ fn main() {
             run_config()
         }
     } else {
-        run_gui();
+        run_gui(forward_audio_enabled);
     }
 }

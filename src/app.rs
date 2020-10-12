@@ -129,6 +129,7 @@ impl App {
             let button = gtk::Button::new_with_label(line.text.as_str());
 
             let button_line = line.clone();
+            let forward_audio_enabled = self.settings.forward_audio_enabled;
 
             button.connect_clicked(move |_| {
                 if !button_line.audios.is_empty() {
@@ -136,7 +137,19 @@ impl App {
 
                     use std::process::Command;
                     Command::new("sh")
-                        .args(&["-c", format!("chatwheel-rs --play {}", id).as_ref()])
+                        .args(&[
+                            "-c",
+                            format!(
+                                "chatwheel-rs --play {} {}",
+                                id,
+                                if forward_audio_enabled {
+                                    "--forward-to-mic"
+                                } else {
+                                    ""
+                                }
+                            )
+                            .as_ref(),
+                        ])
                         .spawn()
                         .expect("failed to spawn process");
                 }
