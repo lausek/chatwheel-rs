@@ -40,12 +40,21 @@ fn configure_page() -> String {
     format!(
         "<html>
             <head>
+                <title>chatwheel-rs config</title>
                 <meta charset='utf-8'>
+                <style>
+                    #save-button {{
+                        position: fixed;
+                        top: 40px;
+                        right: 40px;
+                        font-size: 20px;
+                    }}
+                </style>
             </head>
             <body>
             <form method='POST' action='/'>
+                <button type='submit' id='save-button'>Save</button>
                 {}
-                <button type='submit'>Save</button>
             </form>
             </body>
         </html>",
