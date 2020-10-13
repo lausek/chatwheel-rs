@@ -1,4 +1,5 @@
 mod app;
+mod configure;
 mod consts;
 mod line;
 mod pulseaudio;
@@ -16,7 +17,9 @@ fn run_gui(forward_audio_enabled: bool) {
     App::new(settings).run();
 }
 
-fn run_config() {}
+fn run_config() {
+    configure::run();
+}
 
 fn run_play(id: &str, forward_audio_enabled: bool) {
     if forward_audio_enabled {

@@ -24,7 +24,37 @@ fn fetch_audio(id: &str, url: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
+pub fn create_config_file<T>(ids: &[T]) -> Result<(), Box<dyn Error>>
+where
+    T: ToString + AsRef<str>,
+{
+    let mut path = chatwheel_config_dir();
+    path.push(CHATWHEEL_CONF_PATH);
+
+    let file = File::create(path)?;
+    let mut writer = BufWriter::new(file);
+    let all_lines = load()?;
+    let mut lines = vec![];
+
+    for id in ids.iter() {
+        let mut line_to_add = all_lines.get(&id.to_string()).unwrap().clone();
+        line_to_add.id = Some(id.to_string());
+
+        if !line_to_add.audios.is_empty() {
+            let url = line_to_add.audios.get(0).unwrap();
+            fetch_audio(id.as_ref(), url)?;
+        }
+
+        lines.push(line_to_add);
+    }
+
+    let json_str = serde_json::to_string(&lines)?;
+    writer.write_all(json_str.as_bytes())?;
+
+    Ok(())
+}
+
+fn init_config_dir(path: PathBuf) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
         create_dir(path.clone())?;
 
@@ -36,28 +66,8 @@ fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    path.push(CHATWHEEL_CONF_PATH);
-
     if !path.exists() {
-        let file = File::create(path)?;
-        let mut writer = BufWriter::new(file);
-        let all_lines = load()?;
-        let mut lines = vec![];
-
-        for id in CHATWHEEL_DEFAULT.iter() {
-            let mut line_to_add = all_lines.get(&id.to_string()).unwrap().clone();
-            line_to_add.id = Some(id.to_string());
-
-            if !line_to_add.audios.is_empty() {
-                let url = line_to_add.audios.get(0).unwrap();
-                fetch_audio(id, url)?;
-            }
-
-            lines.push(line_to_add);
-        }
-
-        let json_str = serde_json::to_string(&lines)?;
-        writer.write_all(json_str.as_bytes())?;
+        create_config_file(CHATWHEEL_DEFAULT)?;
     }
 
     Ok(())
