@@ -1,9 +1,9 @@
 use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
-use std::fs::File;
 
 use crate::consts::{CHATWHEEL_SOCKET_PATH, HEIGHT, NAME, WIDTH};
-use crate::settings::{get_audio_file, Settings};
+use crate::pulseaudio;
+use crate::settings::{get_audio_file, get_audio_file_path, Settings};
 
 fn close() -> gtk::Inhibit {
     gtk::main_quit();
@@ -11,33 +11,48 @@ fn close() -> gtk::Inhibit {
 }
 
 pub fn forward_audio(id: &str) {
-    // TODO: https://unix.stackexchange.com/a/594698
-    //
-    // # create a unix pipe for writing data
-    // pactl load-module module-pipe-source source_name="Chatwheel" file="/tmp/chatwheel-rs.input"
-    // # create a null-sink for transforming pipe into a sink
-    // pactl load-module module-null-sink sink_name="ChatwheelSink" source_name="Chatwheel"
-    //
-    // # create a mixing sink
-    // pactl load-module module-combine-sink sink_name="ChatwheelMixer"
-    // slaves=ChatwheelSink,<mix_source>
-    //
-    // # Discord does not accept the Sink.monitor, so we turn it into a new device using echo
-    // # cancellation (original code had sink_master=silence as argument, but this didn't work)
-    // pactl load-module module-echo-cancel sink_name=ChatwheelMic source_name=ChatwheelMic source_master=ChatwheelMixer.monitor aec_method=null source_properties=device.description=ChatwheelMic \ sink_properties=device.description=ChatwheelMic
-    //
-    // ffmpeg -re -i ~/.config/chatwheel-rs/audio/ancient6.mp3.mpeg.mpga -f s16le -ar 44100 -ac 2 - > /tmp/chatwheel-rs.input
+    if !pulseaudio::is_initialized() {
+        pulseaudio::initialize();
+    }
 
-    let mut buffer = vec![];
-    let mut socket = File::create(CHATWHEEL_SOCKET_PATH).unwrap();
-    let mut line = get_audio_file(&id);
+    let line_path = get_audio_file_path(&id);
 
-    use std::io::Read;
-    line.read_to_end(&mut buffer).unwrap();
+    std::process::Command::new("sh")
+        .args(&[
+            "-c",
+            &format!(
+                "ffmpeg -re -i {} -f s16le -ar 44100 -ac 2 - > {}",
+                line_path.as_path().display(),
+                CHATWHEEL_SOCKET_PATH,
+            ),
+        ])
+        .spawn()
+        .unwrap();
+
+    /*
+    // TODO: this is basically trash
+    //let mut buffer = vec![];
+    let line_file = get_audio_file(&id);
+    let decoder = rodio::Decoder::new(line_file).unwrap();
+    let mut socket = std::fs::OpenOptions::new()
+                        .append(true)
+                        .open(CHATWHEEL_SOCKET_PATH)
+                        .unwrap();
+
+    //let mut socket = unix_named_pipe::open_write(CHATWHEEL_SOCKET_PATH).unwrap();
+
+    for sample in decoder {
+        let hb = ((sample >> 8) & 0xF) as u8;
+        let lb = (sample & 0xF) as u8;
+        socket.write(&[hb, lb]).unwrap();
+    }
+
     use std::io::Write;
-    socket.write_all(&buffer).unwrap();
+
+    //socket.write_all(&buffer).unwrap();
 
     socket.flush().unwrap();
+    */
 }
 
 pub fn play_audio_file(id: &str) {

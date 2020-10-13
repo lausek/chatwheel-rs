@@ -1,6 +1,7 @@
 mod app;
 mod consts;
 mod line;
+mod pulseaudio;
 mod settings;
 
 use crate::app::{forward_audio, play_audio_file, App};
