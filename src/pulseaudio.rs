@@ -45,13 +45,8 @@ pub fn initialize() {
         // connect microphone input with mixing sink
         format!("pactl load-module module-loopback sink=ChatwheelMicSink source={}", micsource),
 
-        //format!("pactl load-module module-combine-sink sink_name=ChatwheelMixer sink_properties=device.description=ChatwheelMixer"),
-        //format!("pactl load-module module-null-sink sink_name=ChatwheelMicSink sink_properties=device.description=ChatwheelMicSink"),
-        //format!("pactl load-module module-combine-sink sink_name=ChatwheelMixer sink_properties=device.description=ChatwheelMixer slaves=ChatwheelSink,ChatwheelMicSink"),
-        //format!("pactl load-module module-loopback sink=ChatwheelMixer source={}", micsink),
-        //"pactl load-module module-loopback sink=ChatwheelMixer source=Chatwheel".to_string(),
-        //"pactl load-module module-combine-sink sink_name=ChatwheelMixer, slaves=ChatwheelSink,@DEFAULT_SOURCE@".to_string(),
-        //"pactl load-module module-echo-cancel source_name=ChatwheelMic source_master=ChatwheelMixer.monitor aec_method=null source_properties=device.description=ChatwheelMic sink_properties=device.description=ChatwheelMic".to_string(),
+        format!("pactl load-module module-null-sink sink_name=drop"),
+        format!("pactl load-module module-echo-cancel source_name=ChatwheelMic source_master=ChatwheelMicSink.monitor sink_master=drop aec_method=null source_properties=device.description=ChatwheelMic sink_properties=device.description=ChatwheelMic"),
     ];
 
     let mut loaded_modules = vec![];
