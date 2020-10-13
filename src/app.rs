@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
-use crate::consts::{CHATHWHEEL_PIPE_PATH, HEIGHT, NAME, WIDTH};
+use crate::consts::{CHATHWHEEL_PIPE_PATH, NAME};
 use crate::pulseaudio;
 use crate::settings::{get_audio_file, get_audio_file_path, Settings};
 

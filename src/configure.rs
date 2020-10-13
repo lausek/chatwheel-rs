@@ -75,10 +75,10 @@ pub fn run() {
             };
 
             let new_lines = body
-                .split("&")
-                .map(|kv| kv.split("=").collect::<Vec<_>>())
-                .filter_map(|item| match &item[..] {
-                    &[key, "on"] => Some(key),
+                .split('&')
+                .map(|kv| kv.split('=').collect::<Vec<_>>())
+                .filter_map(|item| match item[..] {
+                    [key, "on"] => Some(key),
                     _ => panic!("invalid data given"),
                 })
                 .collect::<Vec<_>>();

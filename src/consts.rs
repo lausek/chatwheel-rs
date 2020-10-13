@@ -23,5 +23,3 @@ pub const CHATWHEEL_DEFAULT: &[&str] = &[
     "venomancer8",  // Ah, sweet toxicity!
 ];
 pub const NAME: &str = "chatwheel-rs";
-pub const HEIGHT: i32 = 200;
-pub const WIDTH: i32 = 400;
