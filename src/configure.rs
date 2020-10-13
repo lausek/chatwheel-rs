@@ -122,7 +122,10 @@ pub fn run() {
     let hoststr = format!("http://{}:{}", CONFIGURE_HOST, CONFIGURE_PORT);
 
     std::process::Command::new("sh")
-        .args(&["-c", &format!("firefox {}", hoststr)])
+        .args(&[
+            "-c",
+            &format!("/etc/alternatives/x-www-browser {}", hoststr),
+        ])
         .output()
         .unwrap();
 
