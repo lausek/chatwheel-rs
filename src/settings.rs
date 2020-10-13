@@ -54,7 +54,7 @@ where
     Ok(())
 }
 
-fn init_config_dir(path: PathBuf) -> Result<(), Box<dyn Error>> {
+fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
     if !path.exists() {
         create_dir(path.clone())?;
 
@@ -66,6 +66,7 @@ fn init_config_dir(path: PathBuf) -> Result<(), Box<dyn Error>> {
         }
     }
 
+    path.push(CHATWHEEL_CONF_PATH);
     if !path.exists() {
         create_config_file(CHATWHEEL_DEFAULT)?;
     }
