@@ -1,9 +1,9 @@
 use std::path::Path;
 
-use crate::consts::{CHATWHEEL_SOCKET_PATH, HEIGHT, NAME, WIDTH};
+use crate::consts::{CHATHWHEEL_PIPE_PATH, HEIGHT, NAME, WIDTH};
 
 pub fn is_initialized() -> bool {
-    Path::new(CHATWHEEL_SOCKET_PATH).exists()
+    Path::new(CHATHWHEEL_PIPE_PATH).exists()
 }
 
 pub fn initialize() {
@@ -37,7 +37,7 @@ pub fn initialize() {
 
     let script = vec![
         // create a unix pipe for writing data
-        format!("pactl load-module module-pipe-source source_name=Chatwheel file={}", CHATWHEEL_SOCKET_PATH),
+        format!("pactl load-module module-pipe-source source_name=Chatwheel file={}", CHATHWHEEL_PIPE_PATH),
         // create a null-sink for merging microphone input and pipe
         format!("pactl load-module module-null-sink sink_name=ChatwheelMicSink sink_properties=device.description=ChatwheelMicSink"),
         // connect pipe with mixing sink

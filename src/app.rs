@@ -1,7 +1,7 @@
 use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
-use crate::consts::{CHATWHEEL_SOCKET_PATH, HEIGHT, NAME, WIDTH};
+use crate::consts::{CHATHWHEEL_PIPE_PATH, HEIGHT, NAME, WIDTH};
 use crate::pulseaudio;
 use crate::settings::{get_audio_file, get_audio_file_path, Settings};
 
@@ -23,7 +23,7 @@ pub fn forward_audio(id: &str) {
             &format!(
                 "ffmpeg -re -i {} -f s16le -ar 44100 -ac 2 - > {}",
                 line_path.as_path().display(),
-                CHATWHEEL_SOCKET_PATH,
+                CHATHWHEEL_PIPE_PATH,
             ),
         ])
         .spawn()
@@ -36,10 +36,10 @@ pub fn forward_audio(id: &str) {
     let decoder = rodio::Decoder::new(line_file).unwrap();
     let mut socket = std::fs::OpenOptions::new()
                         .append(true)
-                        .open(CHATWHEEL_SOCKET_PATH)
+                        .open(CHATHWHEEL_PIPE_PATH)
                         .unwrap();
 
-    //let mut socket = unix_named_pipe::open_write(CHATWHEEL_SOCKET_PATH).unwrap();
+    //let mut socket = unix_named_pipe::open_write(CHATHWHEEL_PIPE_PATH).unwrap();
 
     for sample in decoder {
         let hb = ((sample >> 8) & 0xF) as u8;
