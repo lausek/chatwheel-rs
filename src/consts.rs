@@ -1,3 +1,5 @@
+pub const CONFIGURE_HOST: &str = "127.0.0.1";
+pub const CONFIGURE_PORT: u16 = 8062;
 pub const CHATWHEEL_ALL_PATH: &str = "./data/chatwheel.json";
 pub const CHATWHEEL_CONF_PATH: &str = "chatwheel.json";
 pub const CHATWHEEL_CONF_AUDIO_PATH: &str = "audio";
