@@ -29,14 +29,14 @@ impl From<clap::ArgMatches<'_>> for Settings {
 
 fn run_gui(settings: Settings) -> Result<(), Box<dyn std::error::Error>> {
     let mut chatwheel = if let Some(profile) = settings.profile {
-        Chatwheel::load(profile)?
+        Chatwheel::load_by_profile(&profile)?
     } else {
         Chatwheel::default()
     };
 
     chatwheel.set_forward_audio(settings.forward_to_mic);
 
-    gtk::init().unwrap_or_else(|_| panic!("Failed to inizialite gtk"));
+    gtk::init().expect("failed to initialize gtk");
     App::new(chatwheel).run();
 
     Ok(())

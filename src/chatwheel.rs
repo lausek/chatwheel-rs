@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use crate::consts::{CHATWHEEL_CONF_AUDIO_PATH, CHATWHEEL_CONF_PATH, CHATWHEEL_DEFAULT, NAME};
 use crate::line::{load, Line};
 
-fn chatwheel_config_dir() -> PathBuf {
+pub fn chatwheel_config_dir() -> PathBuf {
     let mut config_dir = dirs::config_dir().unwrap();
     config_dir.push(NAME);
     config_dir
@@ -24,13 +24,11 @@ fn fetch_audio(id: &str, url: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn create_config_file<T>(ids: &[T]) -> Result<(), Box<dyn Error>>
+pub fn create_config_file<T, U>(path: T, ids: &[U]) -> Result<(), Box<dyn Error>>
 where
-    T: ToString + AsRef<str>,
+    T: AsRef<std::path::Path>,
+    U: ToString + AsRef<str>,
 {
-    let mut path = chatwheel_config_dir();
-    path.push(CHATWHEEL_CONF_PATH);
-
     let file = File::create(path)?;
     let mut writer = BufWriter::new(file);
     let all_lines = load()?;
@@ -68,7 +66,7 @@ fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
 
     path.push(CHATWHEEL_CONF_PATH);
     if !path.exists() {
-        create_config_file(CHATWHEEL_DEFAULT)?;
+        create_config_file(path, CHATWHEEL_DEFAULT)?;
     }
 
     Ok(())
@@ -92,6 +90,19 @@ pub struct Chatwheel {
 }
 
 impl Chatwheel {
+    pub fn empty() -> Self {
+        Self {
+            lines: vec![],
+            forward_audio_enabled: false,
+        }
+    }
+
+    pub fn load_by_profile(id: &str) -> Result<Self, Box<dyn Error>> {
+        let mut config_file = chatwheel_config_dir();
+        config_file.push(format!("{}.json", id));
+        Self::load(config_file)
+    }
+
     pub fn load<T>(config_file: T) -> Result<Self, Box<dyn Error>>
     where
         T: AsRef<std::path::Path>,

@@ -1,10 +1,14 @@
-use crate::chatwheel::{create_config_file, Chatwheel};
-use crate::consts::{CONFIGURE_HOST, CONFIGURE_PORT};
+use crate::chatwheel::{chatwheel_config_dir, create_config_file, Chatwheel};
+use crate::consts::{CHATWHEEL_CONF_PATH, CONFIGURE_HOST, CONFIGURE_PORT, NAME};
 use crate::line::load;
 use crate::Settings;
 
-fn configure_line_table() -> String {
-    let settings = Chatwheel::default();
+fn configure_line_table(settings: &Settings) -> String {
+    let chatwheel = if let Some(profile) = settings.profile.as_ref() {
+        Chatwheel::load_by_profile(profile).unwrap_or(Chatwheel::empty())
+    } else {
+        Chatwheel::default()
+    };
     let all_lines = load().unwrap();
     let mut all_lines = all_lines.into_iter().collect::<Vec<_>>();
 
@@ -13,7 +17,7 @@ fn configure_line_table() -> String {
     let lis = all_lines
         .iter()
         .map(|(line_id, line)| {
-            let is_configured = settings
+            let is_configured = chatwheel
                 .lines
                 .iter()
                 .any(|line| line.id.as_ref().unwrap() == line_id);
@@ -56,7 +60,7 @@ fn configure_line_table() -> String {
     format!("<table>{}</table>", lis.join("\n"))
 }
 
-fn configure_page() -> String {
+fn configure_page(settings: &Settings) -> String {
     format!(
         "<html>
             <head>
@@ -84,12 +88,12 @@ fn configure_page() -> String {
             </form>
             </body>
         </html>",
-        configure_line_table()
+        configure_line_table(settings)
     )
 }
 
 pub fn run(settings: Settings) {
-    let handler = |request: &rouille::Request| match request.method() {
+    let handler = move |request: &rouille::Request| match request.method() {
         "POST" => {
             let body = if let Some(mut reqbody) = request.data() {
                 use std::io::Read;
@@ -105,17 +109,25 @@ pub fn run(settings: Settings) {
                 .map(|kv| kv.split('=').collect::<Vec<_>>())
                 .filter_map(|item| match item[..] {
                     [key, "on"] => Some(key),
-                    _ => panic!("invalid data given"),
+                    _ => None,
                 })
                 .collect::<Vec<_>>();
 
-            if create_config_file(&new_lines).is_ok() {
+            let mut path = chatwheel_config_dir();
+            path.push(NAME);
+            if let Some(profile) = settings.profile.as_ref() {
+                path.push(format!("{}.json", profile));
+            } else {
+                path.push(CHATWHEEL_CONF_PATH);
+            }
+
+            if create_config_file(path, &new_lines).is_ok() {
                 std::process::exit(0);
             }
 
             rouille::Response::html(body)
         }
-        _ => rouille::Response::html(configure_page()),
+        _ => rouille::Response::html(configure_page(&settings)),
     };
     let server = rouille::Server::new((CONFIGURE_HOST, CONFIGURE_PORT), handler)
         .expect("could not create configure server");
