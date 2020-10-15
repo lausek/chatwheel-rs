@@ -5,6 +5,8 @@ mod consts;
 mod line;
 mod pulseaudio;
 
+use std::error::Error;
+
 use crate::app::{forward_audio, play_audio_file, App};
 use crate::chatwheel::Chatwheel;
 
@@ -46,14 +48,16 @@ fn run_config(settings: Settings) {
     configure::run(settings);
 }
 
-fn run_play(settings: Settings) {
+fn run_play(settings: Settings) -> Result<(), Box<dyn Error>> {
     let play_id = settings.play_id.unwrap();
 
     if settings.forward_to_mic {
-        forward_audio(play_id.as_ref());
+        forward_audio(play_id.as_ref())?;
     }
 
-    play_audio_file(play_id.as_ref());
+    play_audio_file(play_id.as_ref())?;
+
+    Ok(())
 }
 
 fn main() {
@@ -79,7 +83,7 @@ fn main() {
     if let Some(name) = subcommand_name {
         match name.as_ref() {
             "config" => run_config(settings),
-            "play" => run_play(settings),
+            "play" => run_play(settings).unwrap(),
             _ => panic!("unknown command {}", name),
         }
     } else {

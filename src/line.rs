@@ -12,6 +12,7 @@ pub type Lines = HashMap<String, Line>;
 pub struct Line {
     pub id: Option<String>,
     pub text: String,
+    #[serde(default)]
     pub audios: Vec<String>,
 }
 

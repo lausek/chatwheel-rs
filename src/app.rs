@@ -1,5 +1,6 @@
 use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
+use std::error::Error;
 
 use crate::chatwheel::{get_audio_file, get_audio_file_path, Chatwheel};
 use crate::consts::{CHATHWHEEL_PIPE_PATH, NAME};
@@ -10,12 +11,12 @@ fn close() -> gtk::Inhibit {
     Inhibit(false)
 }
 
-pub fn forward_audio(id: &str) {
+pub fn forward_audio(id: &str) -> Result<(), Box<dyn Error>> {
     if !pulseaudio::is_initialized() {
         pulseaudio::initialize();
     }
 
-    let line_path = get_audio_file_path(&id);
+    let line_path = get_audio_file_path(&id)?;
 
     std::process::Command::new("sh")
         .args(&[
@@ -28,6 +29,8 @@ pub fn forward_audio(id: &str) {
         ])
         .spawn()
         .unwrap();
+
+    Ok(())
 
     /*
     // TODO: this is basically trash
@@ -55,15 +58,17 @@ pub fn forward_audio(id: &str) {
     */
 }
 
-pub fn play_audio_file(id: &str) {
+pub fn play_audio_file(id: &str) -> Result<(), Box<dyn Error>> {
     let id = id.to_string();
-    let audio_file = get_audio_file(&id);
+    let audio_file = get_audio_file(&id)?;
     let decoder = rodio::Decoder::new(audio_file).unwrap();
 
     let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
     let sink = rodio::Sink::try_new(&stream_handle).unwrap();
     sink.append(decoder);
     sink.sleep_until_end();
+
+    Ok(())
 }
 
 // circular grid pattern

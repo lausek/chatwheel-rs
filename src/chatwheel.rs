@@ -16,7 +16,7 @@ fn fetch_audio(id: &str, url: &str) -> Result<(), Box<dyn Error>> {
     let response = reqwest::blocking::get(url).unwrap();
     let bytes = response.bytes()?;
 
-    let file_path = get_audio_file_path(id);
+    let file_path = get_audio_file_path(id)?;
     let file = File::create(file_path).unwrap();
     let mut writer = BufWriter::new(file);
     writer.write_all(&bytes).unwrap();
@@ -72,16 +72,23 @@ fn init_config_dir(mut path: PathBuf) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn get_audio_file_path(id: &str) -> PathBuf {
-    let mut audio_file = chatwheel_config_dir();
-    audio_file.push(CHATWHEEL_CONF_AUDIO_PATH);
-    audio_file.push(format!("{}.mp3.mpeg.mpga", id));
-    audio_file
+pub fn get_audio_file_path(id: &str) -> Result<PathBuf, Box<dyn Error>> {
+    let mut audio_dir = chatwheel_config_dir();
+    audio_dir.push(CHATWHEEL_CONF_AUDIO_PATH);
+
+    for audio in std::fs::read_dir(audio_dir).expect("cannot read audio dir") {
+        let audio = audio?;
+        if audio.file_name().to_str().unwrap().starts_with(id) {
+            return Ok(audio.path());
+        }
+    }
+
+    unreachable!()
 }
 
-pub fn get_audio_file(id: &str) -> File {
-    let audio_file_path = get_audio_file_path(id);
-    File::open(audio_file_path).unwrap()
+pub fn get_audio_file(id: &str) -> Result<File, Box<dyn Error>> {
+    let audio_file_path = get_audio_file_path(id)?;
+    Ok(File::open(audio_file_path).unwrap())
 }
 
 pub struct Chatwheel {
