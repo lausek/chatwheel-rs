@@ -1,6 +1,7 @@
 use crate::chatwheel::{create_config_file, Chatwheel};
 use crate::consts::{CONFIGURE_HOST, CONFIGURE_PORT};
 use crate::line::load;
+use crate::Settings;
 
 fn configure_line_table() -> String {
     let settings = Chatwheel::default();
@@ -87,7 +88,7 @@ fn configure_page() -> String {
     )
 }
 
-pub fn run() {
+pub fn run(settings: Settings) {
     let handler = |request: &rouille::Request| match request.method() {
         "POST" => {
             let body = if let Some(mut reqbody) = request.data() {

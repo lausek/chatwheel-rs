@@ -155,13 +155,13 @@ impl App {
                         .args(&[
                             "-c",
                             format!(
-                                "chatwheel-rs --play {} {}",
-                                id,
+                                "chatwheel-rs {} play {}",
                                 if forward_audio_enabled {
                                     "--forward-to-mic"
                                 } else {
                                     ""
-                                }
+                                },
+                                id,
                             )
                             .as_ref(),
                         ])

@@ -92,7 +92,10 @@ pub struct Chatwheel {
 }
 
 impl Chatwheel {
-    pub fn load(config_file: PathBuf) -> Result<Self, Box<dyn Error>> {
+    pub fn load<T>(config_file: T) -> Result<Self, Box<dyn Error>>
+    where
+        T: AsRef<std::path::Path>,
+    {
         let file = File::open(config_file)?;
         let reader = BufReader::new(file);
         let lines: Vec<Line> = serde_json::from_reader(reader)?;
@@ -101,6 +104,10 @@ impl Chatwheel {
             forward_audio_enabled: false,
             lines,
         })
+    }
+
+    pub fn set_forward_audio(&mut self, enabled: bool) {
+        self.forward_audio_enabled = enabled;
     }
 }
 

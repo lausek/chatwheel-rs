@@ -8,64 +8,81 @@ mod pulseaudio;
 use crate::app::{forward_audio, play_audio_file, App};
 use crate::chatwheel::Chatwheel;
 
-fn run_gui(forward_audio_enabled: bool) {
-    let mut settings = Chatwheel::default();
+pub struct Settings {
+    forward_to_mic: bool,
+    play_id: Option<String>,
+    profile: Option<String>,
+}
 
-    settings.forward_audio_enabled = forward_audio_enabled;
+impl From<clap::ArgMatches<'_>> for Settings {
+    fn from(matches: clap::ArgMatches) -> Self {
+        Self {
+            forward_to_mic: matches.value_of("forward-to-mic").is_some(),
+            play_id: matches
+                .subcommand
+                .as_ref()
+                .and_then(|s| s.matches.value_of("id").map(str::to_string)),
+            profile: matches.value_of("profile").map(str::to_string),
+        }
+    }
+}
+
+fn run_gui(settings: Settings) -> Result<(), Box<dyn std::error::Error>> {
+    let mut chatwheel = if let Some(profile) = settings.profile {
+        Chatwheel::load(profile)?
+    } else {
+        Chatwheel::default()
+    };
+
+    chatwheel.set_forward_audio(settings.forward_to_mic);
 
     gtk::init().unwrap_or_else(|_| panic!("Failed to inizialite gtk"));
-    App::new(settings).run();
+    App::new(chatwheel).run();
+
+    Ok(())
 }
 
-fn run_config() {
-    configure::run();
+fn run_config(settings: Settings) {
+    configure::run(settings);
 }
 
-fn run_play(id: &str, forward_audio_enabled: bool) {
-    if forward_audio_enabled {
-        forward_audio(id);
+fn run_play(settings: Settings) {
+    let play_id = settings.play_id.unwrap();
+
+    if settings.forward_to_mic {
+        forward_audio(play_id.as_ref());
     }
 
-    play_audio_file(id);
+    play_audio_file(play_id.as_ref());
 }
 
 fn main() {
-    let mut play: Option<String> = None;
-    let mut forward_audio_enabled = false;
-    let mut config_requested = false;
+    use clap::{App, Arg, SubCommand};
 
-    {
-        use argparse::{ArgumentParser, StoreOption, StoreTrue};
-        let mut parser = ArgumentParser::new();
+    let args = App::new("chatwheel-rs")
+        .arg(Arg::with_name("profile").long("profile").takes_value(true))
+        .arg(Arg::with_name("forward-to-mic").long("forward-to-mic"))
+        .subcommand(SubCommand::with_name("config"))
+        .subcommand(
+            SubCommand::with_name("play").arg(
+                Arg::with_name("id")
+                    .required(true)
+                    .takes_value(true)
+                    .value_name("ID"),
+            ),
+        )
+        .get_matches();
 
-        parser
-            .refer(&mut play)
-            .add_option(&["--play"], StoreOption, "output a chatwheel line");
+    let subcommand_name = args.subcommand.as_ref().map(|s| s.name.clone());
+    let settings = Settings::from(args);
 
-        parser.refer(&mut forward_audio_enabled).add_option(
-            &["--forward-to-mic"],
-            StoreTrue,
-            "forward chatwheel line as microphone input",
-        );
-
-        parser.refer(&mut config_requested).add_option(
-            &["--config"],
-            StoreTrue,
-            "open the configuration",
-        );
-
-        parser.parse_args_or_exit();
-    }
-
-    if play.is_some() || config_requested {
-        if let Some(ref id) = play {
-            run_play(&id, forward_audio_enabled);
-        }
-
-        if config_requested {
-            run_config()
+    if let Some(name) = subcommand_name {
+        match name.as_ref() {
+            "config" => run_config(settings),
+            "play" => run_play(settings),
+            _ => panic!("unknown command {}", name),
         }
     } else {
-        run_gui(forward_audio_enabled);
+        run_gui(settings).unwrap();
     }
 }
