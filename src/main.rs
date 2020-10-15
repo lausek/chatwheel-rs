@@ -19,7 +19,7 @@ pub struct Settings {
 impl From<clap::ArgMatches<'_>> for Settings {
     fn from(matches: clap::ArgMatches) -> Self {
         Self {
-            forward_to_mic: matches.value_of("forward-to-mic").is_some(),
+            forward_to_mic: matches.is_present("forward-to-mic"),
             play_id: matches
                 .subcommand
                 .as_ref()
