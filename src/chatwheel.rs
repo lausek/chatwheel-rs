@@ -86,20 +86,13 @@ pub fn get_audio_file(id: &str) -> File {
     File::open(audio_file_path).unwrap()
 }
 
-pub struct Settings {
+pub struct Chatwheel {
     pub lines: Vec<Line>,
     pub forward_audio_enabled: bool,
 }
 
-impl Settings {
-    pub fn load() -> Result<Self, Box<dyn Error>> {
-        let config_dir = chatwheel_config_dir();
-
-        init_config_dir(config_dir.clone())?;
-
-        let mut config_file = config_dir;
-        config_file.push(CHATWHEEL_CONF_PATH);
-
+impl Chatwheel {
+    pub fn load(config_file: PathBuf) -> Result<Self, Box<dyn Error>> {
         let file = File::open(config_file)?;
         let reader = BufReader::new(file);
         let lines: Vec<Line> = serde_json::from_reader(reader)?;
@@ -108,5 +101,16 @@ impl Settings {
             forward_audio_enabled: false,
             lines,
         })
+    }
+}
+
+impl std::default::Default for Chatwheel {
+    fn default() -> Self {
+        let config_dir = chatwheel_config_dir();
+        init_config_dir(config_dir.clone()).unwrap();
+
+        let mut config_file = config_dir;
+        config_file.push(CHATWHEEL_CONF_PATH);
+        Self::load(config_file).unwrap()
     }
 }

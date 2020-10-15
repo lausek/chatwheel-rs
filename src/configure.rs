@@ -1,9 +1,9 @@
+use crate::chatwheel::{create_config_file, Chatwheel};
 use crate::consts::{CONFIGURE_HOST, CONFIGURE_PORT};
 use crate::line::load;
-use crate::settings::{create_config_file, Settings};
 
 fn configure_line_table() -> String {
-    let settings = Settings::load().unwrap();
+    let settings = Chatwheel::default();
     let all_lines = load().unwrap();
     let mut all_lines = all_lines.into_iter().collect::<Vec<_>>();
 

@@ -1,15 +1,15 @@
 mod app;
+mod chatwheel;
 mod configure;
 mod consts;
 mod line;
 mod pulseaudio;
-mod settings;
 
 use crate::app::{forward_audio, play_audio_file, App};
-use crate::settings::Settings;
+use crate::chatwheel::Chatwheel;
 
 fn run_gui(forward_audio_enabled: bool) {
-    let mut settings = Settings::load().unwrap();
+    let mut settings = Chatwheel::default();
 
     settings.forward_audio_enabled = forward_audio_enabled;
 

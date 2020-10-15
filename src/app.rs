@@ -1,9 +1,9 @@
 use gtk::prelude::*;
 use gtk::{StyleContext, Window, WindowPosition, WindowType};
 
+use crate::chatwheel::{get_audio_file, get_audio_file_path, Chatwheel};
 use crate::consts::{CHATHWHEEL_PIPE_PATH, NAME};
 use crate::pulseaudio;
-use crate::settings::{get_audio_file, get_audio_file_path, Settings};
 
 fn close() -> gtk::Inhibit {
     gtk::main_quit();
@@ -89,12 +89,12 @@ fn get_coords(_n: usize) -> &'static [(i32, i32)] {
 }
 
 pub struct App {
-    settings: Settings,
+    chatwheel: Chatwheel,
 }
 
 impl App {
-    pub fn new(settings: Settings) -> App {
-        App { settings }
+    pub fn new(chatwheel: Chatwheel) -> App {
+        App { chatwheel }
     }
 
     pub fn run(&self) {
@@ -138,13 +138,13 @@ impl App {
         );
 
         let component = gtk::Grid::new();
-        let coords = get_coords(self.settings.lines.len());
+        let coords = get_coords(self.chatwheel.lines.len());
 
-        for (line, (x, y)) in self.settings.lines.iter().zip(coords.iter()) {
+        for (line, (x, y)) in self.chatwheel.lines.iter().zip(coords.iter()) {
             let button = gtk::Button::new_with_label(line.text.as_str());
 
             let button_line = line.clone();
-            let forward_audio_enabled = self.settings.forward_audio_enabled;
+            let forward_audio_enabled = self.chatwheel.forward_audio_enabled;
 
             button.connect_clicked(move |_| {
                 if !button_line.audios.is_empty() {
