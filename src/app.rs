@@ -175,6 +175,12 @@ impl App {
             component.attach(&button, *x, *y, 1, 1);
         }
 
+        let close_button = gtk::Button::new_with_label("X");
+        close_button.connect_clicked(|_| {
+            close();
+        });
+        component.attach(&close_button, 3, 3, 1, 1);
+
         component.set_column_spacing(2);
         component.set_row_spacing(2);
         component.show_all();
