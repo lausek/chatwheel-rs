@@ -150,17 +150,21 @@ impl App {
 
             let button_line = line.clone();
             let forward_audio_enabled = self.chatwheel.forward_audio_enabled;
+            let profile = if let Some(profile) = self.chatwheel.profile.as_ref() {
+                format!("--profile {}", profile)
+            } else {
+                "".to_string()
+            };
 
             button.connect_clicked(move |_| {
-                if !button_line.audios.is_empty() {
-                    let id = button_line.id.as_ref().unwrap();
-
+                if let Some(id) = button_line.id.as_ref() {
                     use std::process::Command;
                     Command::new("sh")
                         .args(&[
                             "-c",
                             format!(
-                                "chatwheel-rs {} play {}",
+                                "chatwheel-rs {} {} play {}",
+                                profile,
                                 if forward_audio_enabled {
                                     "--forward-to-mic"
                                 } else {

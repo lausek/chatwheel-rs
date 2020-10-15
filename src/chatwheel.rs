@@ -92,36 +92,41 @@ pub fn get_audio_file(id: &str) -> Result<File, Box<dyn Error>> {
 }
 
 pub struct Chatwheel {
-    pub lines: Vec<Line>,
     pub forward_audio_enabled: bool,
+    pub lines: Vec<Line>,
+    pub profile: Option<String>,
 }
 
 impl Chatwheel {
     pub fn empty() -> Self {
         Self {
-            lines: vec![],
             forward_audio_enabled: false,
+            lines: vec![],
+            profile: None,
         }
     }
 
     pub fn load_by_profile(id: &str) -> Result<Self, Box<dyn Error>> {
         let mut config_file = chatwheel_config_dir();
         config_file.push(format!("{}.json", id));
-        Self::load(config_file)
+        let mut obj = Self::load(config_file)?;
+        obj.set_profile(id.to_string());
+        Ok(obj)
     }
 
     pub fn load<T>(config_file: T) -> Result<Self, Box<dyn Error>>
     where
         T: AsRef<std::path::Path>,
     {
+        let mut obj = Self::empty();
         let file = File::open(config_file)?;
         let reader = BufReader::new(file);
-        let lines: Vec<Line> = serde_json::from_reader(reader)?;
+        obj.lines = serde_json::from_reader(reader)?;
+        Ok(obj)
+    }
 
-        Ok(Self {
-            forward_audio_enabled: false,
-            lines,
-        })
+    pub fn set_profile(&mut self, profile: String) {
+        self.profile = Some(profile);
     }
 
     pub fn set_forward_audio(&mut self, enabled: bool) {
